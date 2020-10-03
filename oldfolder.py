@@ -65,8 +65,6 @@ def main(number, path, storage_folder, time_type):
         print(
             f"Based on the {time_type} times of the files contained within them,\n"
             f"the subdirectories that will be moved to the {storage_folder} folder are:"
-
-
         )
         for operation in file_operations:
             *_, subdirectory_name = operation
@@ -87,7 +85,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "number",
         type=float,
-        help="Number of years since files in subfolders were last modified, accessed, or created."
+        help="Number of years since files in subfolders were last modified, accessed, or created.",
     )
     parser.add_argument(
         "path", type=str, help="Path of directory where subfolders can be found."
