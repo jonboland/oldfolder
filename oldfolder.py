@@ -1,3 +1,10 @@
+"""
+Moves old subdirectories that contain files which haven't been modified for a given number of years.
+
+The old subdirectories will be placed in a storage folder located in their parent directory.
+Moves can also be specified based on created or accessed time.
+
+"""
 import argparse
 import os
 import pathlib
@@ -11,6 +18,26 @@ TIME_TYPES = {"modified": "st_mtime", "accessed": "st_atime", "created": "st_cti
 
 
 def prepare_move(number, path, storage_folder, time_type):
+    """
+    Identifies old subdirectories to move and prepares the necessary file operations.
+
+    Args:
+        number (int or float): Number of years since any file in a subdirectory
+        was last modified, accessed, or created.
+
+        path (str): Path of directory where subdirectories can be found.
+
+        storage_folder (str): Name of storage folder to place the old subdirectories inside.
+
+        time_type (str): Optional time stat type to base the move on.
+
+        Valid choices are modified, accessed or created (default is modified).
+
+    Returns:
+        A list of tuples containing details about the file operations to be carried out.
+
+        Each tuple includes the source path, destination path and subdirectory name.
+    """
     length = SECONDS * number
     now = time.time()
     my_directory = pathlib.Path(path)
@@ -28,6 +55,8 @@ def prepare_move(number, path, storage_folder, time_type):
 
 
 def _get_stats(subdirectory, time_type):
+    # Returns a list of time stats for each file in a subdirectory,
+    # based on the specified time type.
     time_stats = []
     for folder, _, files in os.walk(subdirectory):
         for file in files:
@@ -38,16 +67,25 @@ def _get_stats(subdirectory, time_type):
 
 
 def _check_storage_folder_name(storage_folder, subdirectory_name):
+    # Checks if the storage folder name already exists
+    # and aborts the operation if it does.
     if storage_folder == subdirectory_name:
         print(
             "The operation has been aborted because a folder\n"
             f"named {storage_folder} already exists in that location.\n"
-            "Please try again using a different storage_folder name."
+            "Please try again using a different storage folder name."
         )
         sys.exit()
 
 
 def move_files(file_operations):
+    """
+    Performs a list of file operations that move old directories into a storage folder.
+
+    Args:
+        file_operations (list): tuple for each move operation that includes
+        a source and destination path.
+    """
     for operation in file_operations:
         source, destination, _ = operation
         shutil.move(source, destination)
@@ -78,22 +116,22 @@ def main(number, path, storage_folder, time_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Move old subfolders that contain files "
+        description="Move old subdirectories that contain files "
         "which haven't been modified for a given period. "
         "Moves can also be specified based on created or accessed time."
     )
     parser.add_argument(
         "number",
         type=float,
-        help="Number of years since files in subfolders were last modified, accessed, or created.",
+        help="Number of years since files in subdirectories were last modified, accessed, or created.",
     )
     parser.add_argument(
-        "path", type=str, help="Path of directory where subfolders can be found."
+        "path", type=str, help="Path of directory where subdirectories can be found."
     )
     parser.add_argument(
         "storage",
         type=str,
-        help="Name of storage folder to place the old subfolders inside. "
+        help="Name of storage folder to place the old subdirectories inside. "
         "The storage folder location will be the specifed path.",
     )
     parser.add_argument(
