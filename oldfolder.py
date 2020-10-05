@@ -17,15 +17,15 @@ SECONDS = 365 * 24 * 60 * 60
 TIME_TYPES = {"modified": "st_mtime", "accessed": "st_atime", "created": "st_ctime"}
 
 
-def prepare_move(number, path, storage_folder, time_type):
+def prepare_move(path, number, storage_folder, time_type):
     """
     Identifies old subdirectories to move and prepares the necessary file operations.
 
     Args:
+        path (str): Path of directory where subdirectories can be found.
+
         number (int or float): Number of years since any file in a subdirectory
         was last modified, accessed, or created.
-
-        path (str): Path of directory where subdirectories can be found.
 
         storage_folder (str): Name of storage folder to place the old subdirectories inside.
 
@@ -34,24 +34,36 @@ def prepare_move(number, path, storage_folder, time_type):
         Valid choices are modified, accessed or created (default is modified).
 
     Returns:
-        A list of tuples containing details about the file operations to be carried out.
+        A list of tuples containing the details of the file operations to be carried out.
 
-        Each tuple includes the source path, destination path and subdirectory name.
+        Each tuple comprises a source path and a destination path.
     """
+    main_directory = pathlib.Path(path)
+    subdirectories = [item for item in main_directory.iterdir() if item.is_dir()]
+    _check_storage_folder_name(storage_folder, subdirectories)
     length = SECONDS * number
     now = time.time()
-    my_directory = pathlib.Path(path)
-    my_subdirectories = (item for item in my_directory.iterdir() if item.is_dir())
     file_operations = []
-    for subdirectory in my_subdirectories:
+    for subdirectory in subdirectories:
         time_stats = _get_stats(subdirectory, time_type)
         if all(time_stat < (now - length) for time_stat in time_stats):
-            *_, subdirectory_name = subdirectory.parts
-            _check_storage_folder_name(storage_folder, subdirectory_name)
             source = subdirectory
-            destination = my_directory / storage_folder / subdirectory_name
-            file_operations.append((source, destination, subdirectory_name))
+            destination = main_directory / storage_folder / subdirectory.name
+            file_operations.append((source, destination))
     return file_operations
+
+
+def _check_storage_folder_name(storage_folder, subdirectories):
+    # Checks if the storage folder name already exists in the main directory
+    # and aborts the operation if it does.
+    subdirectory_names = {subdirectory.name for subdirectory in subdirectories}
+    if storage_folder in subdirectory_names:
+        print(
+            "The operation has been aborted because a folder\n"
+            f"named {storage_folder} already exists in that location.\n"
+            "Please try again using a different storage folder name."
+        )
+        sys.exit()
 
 
 def _get_stats(subdirectory, time_type):
@@ -66,34 +78,22 @@ def _get_stats(subdirectory, time_type):
     return time_stats
 
 
-def _check_storage_folder_name(storage_folder, subdirectory_name):
-    # Checks if the storage folder name already exists
-    # and aborts the operation if it does.
-    if storage_folder == subdirectory_name:
-        print(
-            "The operation has been aborted because a folder\n"
-            f"named {storage_folder} already exists in that location.\n"
-            "Please try again using a different storage folder name."
-        )
-        sys.exit()
-
-
 def move_files(file_operations):
     """
-    Performs a list of file operations that move old directories into a storage folder.
+    Performs a list of file operations that move old subdirectories into a storage folder.
 
     Args:
-        file_operations (list): tuple for each move operation that includes
+        file_operations (list): tuple for each move operation containing
         a source and destination path.
     """
     for operation in file_operations:
-        source, destination, _ = operation
+        source, destination = operation
         shutil.move(source, destination)
     print("Operation complete")
 
 
-def main(number, path, storage_folder, time_type):
-    file_operations = prepare_move(number, path, storage_folder, time_type)
+def main(path, number, storage_folder, time_type):
+    file_operations = prepare_move(path, number, storage_folder, time_type)
     if not file_operations:
         print(
             f"All subdirectories contain files with {time_type} times\n"
@@ -105,7 +105,8 @@ def main(number, path, storage_folder, time_type):
             f"the subdirectories that will be moved to the {storage_folder} folder are:"
         )
         for operation in file_operations:
-            *_, subdirectory_name = operation
+            _, destination = operation
+            subdirectory_name = destination.name
             print("\t", subdirectory_name)
         proceed = input("Would you like to proceed?: Y/N ")
         if proceed.upper() in ("Y", "YES"):
@@ -117,16 +118,16 @@ def main(number, path, storage_folder, time_type):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Move old subdirectories that contain files "
-        "which haven't been modified for a given period. "
+        "which haven't been modified for a given period of time. "
         "Moves can also be specified based on created or accessed time."
+    )
+    parser.add_argument(
+        "path", type=str, help="Path of directory where subdirectories can be found."
     )
     parser.add_argument(
         "number",
         type=float,
         help="Number of years since files in subdirectories were last modified, accessed, or created.",
-    )
-    parser.add_argument(
-        "path", type=str, help="Path of directory where subdirectories can be found."
     )
     parser.add_argument(
         "storage",
@@ -145,4 +146,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    main(args.number, args.path, args.storage, args.time_type)
+    main(args.path, args.number, args.storage, args.time_type)
