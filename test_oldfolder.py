@@ -70,5 +70,45 @@ def test_move_files(fake_directory, capsys):
     assert captured.out == ("Operation complete\n")
 
 
+def test_main(monkeypatch, capsys):
+    def fake_prepare(path, number, storage_folder, time_type):
+        return [
+            (
+                Path(r"F:\main_directory\old_files_1"),
+                Path(r"F:\main_directory\old_stuff\old_files_1"),
+            )
+        ]
+
+    monkeypatch.setattr(oldfolder, "prepare_move", fake_prepare)
+
+    try:
+        oldfolder.main(Path(r"F:\main_directory"), 1, "old_stuff", "modified")
+    except OSError:
+        pass
+
+    captured = capsys.readouterr()
+    assert captured.out == (
+        "Based on the modified times of the files contained within them,\n"
+        "the subdirectories that will be moved to the old_stuff folder are:\n"
+        "\t old_files_1\n"
+        "Would you like to proceed?: Y/N "
+    )
+
+
+def test_main_no_file_operations(monkeypatch, capsys):
+    def fake_prepare(path, number, storage_folder, time_type):
+        return []
+
+    monkeypatch.setattr(oldfolder, "prepare_move", fake_prepare)
+
+    oldfolder.main(Path(r"F:\main_directory"), 1, "old_stuff", "accessed")
+
+    captured = capsys.readouterr()
+    assert captured.out == (
+        "All subdirectories contain files with accessed times\n"
+        "in the specified period so the operation was aborted\n"
+    )
+
+
 if __name__ == "__main__":
     pytest.main()
