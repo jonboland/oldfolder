@@ -53,5 +53,22 @@ def test_prepare_move_no_file_operations(fs, monkeypatch):
     assert result == []
 
 
+def test_move_files(fake_directory, capsys):
+    file_operations = [
+        (
+            Path(r"F:\main_directory\old_files"),
+            Path(r"F:\main_directory\old_stuff\old_files"),
+        )
+    ]
+
+    oldfolder.move_files(file_operations)
+    assert Path(r"F:\main_directory\new_files").exists()
+    assert Path(r"F:\main_directory\old_stuff\old_files").exists()
+    assert not Path(r"F:\main_directory\old_files").exists()
+
+    captured = capsys.readouterr()
+    assert captured.out == ("Operation complete\n")
+
+
 if __name__ == "__main__":
     pytest.main()
