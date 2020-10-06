@@ -1,8 +1,7 @@
 Old Folder
 ==========
 
-. image:: oldfolder.png
-   :alt: Picture of an old folder
+.. figure:: oldfolder.png
 
 Moves old subfolders that contain files which haven't been modified for a given period.
 
