@@ -12,12 +12,16 @@ def fake_directory(fs):
 
 @pytest.fixture
 def fake_time(monkeypatch):
+    # Set point in time to Wednesday, October 7, 2020 9:07:33 AM GMT+01:00 DST
     def fake_now():
         return 1602058053.0
+
     monkeypatch.setattr(oldfolder.time, "time", fake_now)
 
 
-def test_prepare_move_existing_storage_folder(fs, fake_directory, capsys):
+def test_prepare_move_storage_folder_name_already_exists(fs, fake_directory, capsys):
+    """Fails if SystemExit not raised or abort message not displayed."""
+    # Add folder with same name as storage folder to the fake directory
     fs.create_dir(Path(r"F:\main_directory\old_stuff"))
 
     with pytest.raises(SystemExit):
@@ -31,15 +35,20 @@ def test_prepare_move_existing_storage_folder(fs, fake_directory, capsys):
     )
 
 
-def test_prepare_move(fs, fake_time, monkeypatch):
+def test_prepare_move_with_file_operations(fs, fake_time, monkeypatch):
+    """Fails if correct file operation is not prepared."""
+    # Create a fake directory containing a single folder
     fs.create_dir(Path(r"F:\main_directory\old_files_1"))
 
+    # Return fake stats mimicking files all created before the given time period
     def fake_stats(subdirectory, time_type):
         return [1546348608.0, 1514785000.0, 1514812608.0]
 
     monkeypatch.setattr(oldfolder, "_get_stats", fake_stats)
 
-    result = oldfolder.prepare_move(Path(r"F:\main_directory"), 1, "old_stuff", "created")
+    result = oldfolder.prepare_move(
+        Path(r"F:\main_directory"), 1, "old_stuff", "created"
+    )
     assert result == [
         (
             Path(r"F:\main_directory\old_files_1"),
@@ -49,18 +58,24 @@ def test_prepare_move(fs, fake_time, monkeypatch):
 
 
 def test_prepare_move_no_file_operations(fs, fake_time, monkeypatch):
+    """Fails if list of file operations is not blank."""
+    # Create a fake directory containing a single folder
     fs.create_dir(Path(r"F:\main_directory\old_files_1"))
 
+    # Return fake stats mimicking files all accessed within the given time period
     def fake_stats(subdirectory, time_type):
         return [1646348608.0, 1614785000.0, 1614812608.0]
 
     monkeypatch.setattr(oldfolder, "_get_stats", fake_stats)
 
-    result = oldfolder.prepare_move(Path(r"F:\main_directory"), 1, "old_stuff", "accessed")
+    result = oldfolder.prepare_move(
+        Path(r"F:\main_directory"), 1, "old_stuff", "accessed"
+    )
     assert result == []
 
 
-def test_move_files(fake_directory, capsys):
+def test_move_files_one_folder_placed_in_storage(fake_directory, capsys):
+    """Fails if correct subdirectories not present or message not displayed."""
     file_operations = [
         (
             Path(r"F:\main_directory\old_files"),
@@ -77,7 +92,7 @@ def test_move_files(fake_directory, capsys):
     assert captured.out == ("Operation complete\n")
 
 
-def test_main(monkeypatch, capsys):
+def test_main_correct_move_summary_displayed(monkeypatch, capsys):
     def fake_prepare(path, number, storage_folder, time_type):
         return [
             (
@@ -102,7 +117,7 @@ def test_main(monkeypatch, capsys):
     )
 
 
-def test_main_no_file_operations(monkeypatch, capsys):
+def test_main_no_file_operations_aborted_message_displayed(monkeypatch, capsys):
     def fake_prepare(path, number, storage_folder, time_type):
         return []
 
