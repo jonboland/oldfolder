@@ -9,7 +9,8 @@ Old Folder
 Spring cleans a file directory by storing away its old subdirectories
 if they haven’t been modified for a given period.
 
-Old Folder can be used via a command line interface:
+Old Folder is a single file script that can be used via a command line interface
+with Python 3.6+ preinstalled:
 
 .. code-block:: shell-session
 
