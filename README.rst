@@ -121,4 +121,4 @@ After
                   oldest_file.jpg
                   old_file_2.txt
 
-You read more about the program towards the end of this `shutil article <https://blog.finxter.com/python-shutil-high-level-file-operations-demystified/>`_.
+You can read more about the program towards the end of this `shutil article <https://blog.finxter.com/python-shutil-high-level-file-operations-demystified/>`_.
