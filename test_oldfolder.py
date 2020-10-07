@@ -10,6 +10,13 @@ def fake_directory(fs):
     fs.create_dir(Path(r"F:\main_directory\old_files"))
 
 
+@pytest.fixture
+def fake_time(monkeypatch):
+    def fake_now():
+        return 1602058053.0
+    monkeypatch.setattr(oldfolder.time, "time", fake_now)
+
+
 def test_prepare_move_existing_storage_folder(fs, fake_directory, capsys):
     fs.create_dir(Path(r"F:\main_directory\old_stuff"))
 
@@ -24,7 +31,7 @@ def test_prepare_move_existing_storage_folder(fs, fake_directory, capsys):
     )
 
 
-def test_prepare_move(fs, monkeypatch):
+def test_prepare_move(fs, fake_time, monkeypatch):
     fs.create_dir(Path(r"F:\main_directory\old_files_1"))
 
     def fake_stats(subdirectory, time_type):
@@ -41,7 +48,7 @@ def test_prepare_move(fs, monkeypatch):
     ]
 
 
-def test_prepare_move_no_file_operations(fs, monkeypatch):
+def test_prepare_move_no_file_operations(fs, fake_time, monkeypatch):
     fs.create_dir(Path(r"F:\main_directory\old_files_1"))
 
     def fake_stats(subdirectory, time_type):
