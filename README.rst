@@ -46,7 +46,7 @@ Subdirectories that don't contain any files modified in the period will be liste
           old_files_2
  Would you like to proceed?: Y/N
 
-You see a simple before and after example below:
+A simple before and after example can be seen below:
 
 Before
 ~~~~~~
@@ -120,3 +120,5 @@ After
           └───old_second_level_folder
                   oldest_file.jpg
                   old_file_2.txt
+
+You read more about the program in towards the end of this article about `shutil <https://blog.finxter.com/python-shutil-high-level-file-operations-demystified/>`_.
