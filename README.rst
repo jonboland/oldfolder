@@ -7,7 +7,7 @@ Old Folder
 |
 
 Old Folder spring cleans a file directory by storing away subdirectories
-if they haven’t been modified for a given period.
+that haven’t been modified for a given period.
 
 It's a single file script that can be used via a command line interface
 with Python 3.6+ preinstalled:
