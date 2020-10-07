@@ -127,7 +127,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "number",
         type=float,
-        help="Number of years since files in subdirectories were last modified, accessed, or created.",
+        help="Number of years since files in subdirectories were modified, accessed, or created.",
     )
     parser.add_argument(
         "storage",
