@@ -1,13 +1,13 @@
 Old Folder
 ==========
 
-.. figure:: docs/oldfolder.png
-  :alt: Sepia tone picture of an old folder
+.. figure:: docs/oldfiles.png
+  :alt: Black and white picture of stacks of old folders
 
 |
 
 Spring cleans a file directory by storing away its old subdirectories
-if they haven’t been modified for a given period of time.
+if they haven’t been modified for a given period.
 
 Old Folder can be used via a command line interface:
 
@@ -34,9 +34,9 @@ Pass the path of the main directory, the length of time and the storage folder n
 
 .. code-block:: shell-session
 
- F:\>py oldfolder.py "F:\main_directory" 1 "old_stuff"
+ F:\>py oldfolder.py "F:\main_directory" 1.5 "old_stuff"
 
-Subdirectories that don't contain any files modified in the period will be listed for storage:
+Subdirectories that don't contain any files modified during the period will be listed for storage:
 
 .. code-block:: shell-session
 
@@ -53,7 +53,7 @@ Before
 
 .. code-block:: shell-session
 
- F:\my_directory>tree /F
+ F:\main_directory>tree /F
  ...
  F:.
  ├───new_files_1
@@ -89,7 +89,7 @@ After
 
 .. code-block:: shell-session
 
- F:\my_directory>tree /F
+ F:\main_directory>tree /F
  ...
  F:.
   ├───new_files_1
@@ -121,4 +121,4 @@ After
                   oldest_file.jpg
                   old_file_2.txt
 
-You read more about the program in towards the end of this article about `shutil <https://blog.finxter.com/python-shutil-high-level-file-operations-demystified/>`_.
+You read more about the program towards the end of this `shutil article <https://blog.finxter.com/python-shutil-high-level-file-operations-demystified/>`_.
