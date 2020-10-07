@@ -84,6 +84,7 @@ def test_move_files_one_folder_placed_in_storage(fake_directory, capsys):
     ]
 
     oldfolder.move_files(file_operations)
+
     assert Path(r"F:\main_directory\new_files").exists()
     assert Path(r"F:\main_directory\old_stuff\old_files").exists()
     assert not Path(r"F:\main_directory\old_files").exists()
