@@ -24,14 +24,13 @@ def test_prepare_move_storage_folder_name_already_exists(fs, fake_directory, cap
     # Add folder with same name as storage folder to the fake directory
     fs.create_dir(Path(r"F:\main_directory\old_stuff"))
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as excinfo:
         oldfolder.prepare_move(Path(r"F:\main_directory"), 1, "old_stuff", "modified")
 
-    captured = capsys.readouterr()
-    assert captured.out == (
-        "The operation has been aborted because a folder\n"
-        "named old_stuff already exists in that location.\n"
-        "Please try again using a different storage folder name.\n"
+    assert (
+        "Cannot complete the operation as a folder named old_stuff "
+        "already exists in that location.\n"
+        in str(excinfo.value)
     )
 
 
