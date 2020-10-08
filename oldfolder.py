@@ -39,7 +39,7 @@ def prepare_move(path, number, storage_folder, time_type):
         Each tuple comprises a source path and a destination path.
 
     Raises:
-        SystemExit: if a subdirectory with the same name as the storage folder is found.
+        ValueError: if a subdirectory with the same name as the storage folder is found.
     """
     main_directory = pathlib.Path(path)
     subdirectories = [item for item in main_directory.iterdir() if item.is_dir()]
