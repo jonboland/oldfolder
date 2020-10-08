@@ -19,19 +19,17 @@ def fake_time(monkeypatch):
     monkeypatch.setattr(oldfolder.time, "time", fake_now)
 
 
-def test_prepare_move_storage_folder_name_already_exists(fs, fake_directory, capsys):
-    """Fails if SystemExit not raised or abort message not displayed."""
+def test_prepare_move_storage_folder_name_already_exists(fs, fake_directory):
+    """Fails if ValueError not raised with correct error message."""
     # Add folder with same name as storage folder to the fake directory
     fs.create_dir(Path(r"F:\main_directory\old_stuff"))
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(ValueError) as excinfo:
         oldfolder.prepare_move(Path(r"F:\main_directory"), 1, "old_stuff", "modified")
 
-    captured = capsys.readouterr()
-    assert captured.out == (
-        "The operation has been aborted because a folder\n"
-        "named old_stuff already exists in that location.\n"
-        "Please try again using a different storage folder name.\n"
+    assert (
+        "Cannot complete the operation because a folder named old_stuff "
+        "already exists in that location.\n" == str(excinfo.value)
     )
 
 
@@ -74,8 +72,8 @@ def test_prepare_move_no_file_operations(fs, fake_time, monkeypatch):
     assert result == []
 
 
-def test_move_files_one_folder_placed_in_storage(fake_directory, capsys):
-    """Fails if correct subdirectories not present or message not displayed."""
+def test_move_files_one_folder_placed_in_storage(fake_directory):
+    """Fails if correct subdirectories not present."""
     file_operations = [
         (
             Path(r"F:\main_directory\old_files"),
@@ -89,8 +87,21 @@ def test_move_files_one_folder_placed_in_storage(fake_directory, capsys):
     assert Path(r"F:\main_directory\old_stuff\old_files").exists()
     assert not Path(r"F:\main_directory\old_files").exists()
 
+
+def test_main_storage_folder_name_already_exists(fs, fake_directory, capsys):
+    """Fails if SystemExit not raised or abort message not displayed."""
+    # Add folder with same name as storage folder to the fake directory
+    fs.create_dir(Path(r"F:\main_directory\old_stuff"))
+
+    with pytest.raises(SystemExit):
+        oldfolder.main(Path(r"F:\main_directory"), 1, "old_stuff", "modified")
+
     captured = capsys.readouterr()
-    assert captured.out == ("Operation complete\n")
+    assert captured.out == (
+        "The operation has been aborted because a folder\n"
+        "named old_stuff already exists in that location.\n"
+        "Please try again using a different storage folder name.\n"
+    )
 
 
 def test_main_correct_move_summary_displayed(monkeypatch, capsys):

@@ -37,6 +37,9 @@ def prepare_move(path, number, storage_folder, time_type):
         A list of tuples containing the details of the file operations to be carried out.
 
         Each tuple comprises a source path and a destination path.
+
+    Raises:
+        ValueError: if a subdirectory with the same name as the storage folder is found.
     """
     main_directory = pathlib.Path(path)
     subdirectories = [item for item in main_directory.iterdir() if item.is_dir()]
@@ -58,12 +61,10 @@ def _check_storage_folder_name(storage_folder, subdirectories):
     # and aborts the operation if it does.
     subdirectory_names = {subdirectory.name for subdirectory in subdirectories}
     if storage_folder in subdirectory_names:
-        print(
-            "The operation has been aborted because a folder\n"
-            f"named {storage_folder} already exists in that location.\n"
-            "Please try again using a different storage folder name."
+        raise ValueError(
+            "Cannot complete the operation because a folder named "
+            f"{storage_folder} already exists in that location.\n"
         )
-        sys.exit()
 
 
 def _get_stats(subdirectory, time_type):
@@ -89,11 +90,19 @@ def move_files(file_operations):
     for operation in file_operations:
         source, destination = operation
         shutil.move(source, destination)
-    print("Operation complete")
 
 
 def main(path, number, storage_folder, time_type):
-    file_operations = prepare_move(path, number, storage_folder, time_type)
+    try:
+        file_operations = prepare_move(path, number, storage_folder, time_type)
+    except ValueError:
+        print(
+            "The operation has been aborted because a folder\n"
+            f"named {storage_folder} already exists in that location.\n"
+            "Please try again using a different storage folder name."
+        )
+        sys.exit()
+
     if not file_operations:
         print(
             f"All subdirectories contain files with {time_type} times\n"
@@ -111,6 +120,7 @@ def main(path, number, storage_folder, time_type):
         proceed = input("Would you like to proceed?: Y/N ")
         if proceed.upper() in ("Y", "YES"):
             move_files(file_operations)
+            print("Operation complete")
         else:
             print("Operation aborted")
 
