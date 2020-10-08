@@ -20,11 +20,11 @@ def fake_time(monkeypatch):
 
 
 def test_prepare_move_storage_folder_name_already_exists(fs, fake_directory):
-    """Fails if SystemExit not raised with correct error message."""
+    """Fails if ValueError not raised with correct error message."""
     # Add folder with same name as storage folder to the fake directory
     fs.create_dir(Path(r"F:\main_directory\old_stuff"))
 
-    with pytest.raises(SystemExit) as excinfo:
+    with pytest.raises(ValueError) as excinfo:
         oldfolder.prepare_move(Path(r"F:\main_directory"), 1, "old_stuff", "modified")
 
     assert (

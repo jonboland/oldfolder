@@ -9,6 +9,7 @@ import argparse
 import os
 import pathlib
 import shutil
+import sys
 import time
 
 
@@ -60,7 +61,7 @@ def _check_storage_folder_name(storage_folder, subdirectories):
     # and aborts the operation if it does.
     subdirectory_names = {subdirectory.name for subdirectory in subdirectories}
     if storage_folder in subdirectory_names:
-        raise SystemExit(
+        raise ValueError(
             "Cannot complete the operation because a folder named "
             f"{storage_folder} already exists in that location.\n"
         )
@@ -94,13 +95,13 @@ def move_files(file_operations):
 def main(path, number, storage_folder, time_type):
     try:
         file_operations = prepare_move(path, number, storage_folder, time_type)
-    except SystemExit:
+    except ValueError:
         print(
             "The operation has been aborted because a folder\n"
             f"named {storage_folder} already exists in that location.\n"
             "Please try again using a different storage folder name."
         )
-        raise
+        sys.exit()
 
     if not file_operations:
         print(
