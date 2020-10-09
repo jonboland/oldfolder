@@ -56,13 +56,17 @@ def prepare_move(path, number, storage_folder, time_type):
     return file_operations
 
 
+class FolderAlreadyExistsError(ValueError):
+    pass
+
+
 def _check_storage_folder_name(storage_folder, subdirectories):
     # Checks if the storage folder name already exists in the main directory
     # and aborts the operation if it does.
     subdirectory_names = {subdirectory.name for subdirectory in subdirectories}
     if storage_folder in subdirectory_names:
-        raise ValueError(
-            "Cannot complete the operation because a folder named "
+        raise FolderAlreadyExistsError(
+            "The operation was aborted because a folder named "
             f"{storage_folder} already exists in that location.\n"
         )
 
@@ -95,17 +99,13 @@ def move_files(file_operations):
 def main(path, number, storage_folder, time_type):
     try:
         file_operations = prepare_move(path, number, storage_folder, time_type)
-    except ValueError:
-        print(
-            "The operation has been aborted because a folder\n"
-            f"named {storage_folder} already exists in that location.\n"
-            "Please try again using a different storage folder name."
-        )
+    except FolderAlreadyExistsError as error:
+        print(error, "Please try again using a different storage folder name.", sep="")
         sys.exit()
-    except FileNotFoundError as e:
+    except FileNotFoundError as error:
         print(
             "The operation was aborted because the system cannot find "
-            f"the specified file path: {e.filename}\n"
+            f"the specified file path: {error.filename}\n"
             "Please check the path and try again."
         )
         sys.exit()
@@ -129,21 +129,21 @@ def main(path, number, storage_folder, time_type):
             try:
                 move_files(file_operations)
                 print("Operation complete")
-            except FileNotFoundError as e:
+            except FileNotFoundError as error:
                 print(
                     "The operation was aborted because the system cannot find "
-                    f"the specified file path: {e.filename}\n"
+                    f"the specified file path: {error.filename}\n"
                     "This error may have occured because the storage folder "
                     "name you provided is reserved by the system.\n"
                     "Please correct the issue and try again."
                 )
                 sys.exit()
-            except OSError as e:
+            except OSError as error:
                 print(
                     "The operating system was unable to process the operation "
                     "for the following reason:"
                 )
-                print(e.strerror)
+                print(error.strerror)
                 print("Please correct the issue and try again.")
                 sys.exit()
         else:
