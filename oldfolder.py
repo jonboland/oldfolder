@@ -102,6 +102,13 @@ def main(path, number, storage_folder, time_type):
             "Please try again using a different storage folder name."
         )
         sys.exit()
+    except FileNotFoundError as e:
+        print(
+            "The operation was aborted because the system cannot find "
+            f"the specified file path: {e.filename}\n"
+            "Please check the path and try again."
+        )
+        sys.exit()
 
     if not file_operations:
         print(
@@ -119,8 +126,26 @@ def main(path, number, storage_folder, time_type):
             print("\t", subdirectory_name)
         proceed = input("Would you like to proceed?: Y/N ")
         if proceed.upper() in ("Y", "YES"):
-            move_files(file_operations)
-            print("Operation complete")
+            try:
+                move_files(file_operations)
+                print("Operation complete")
+            except FileNotFoundError as e:
+                print(
+                    "The operation was aborted because the system cannot find "
+                    f"the specified file path: {e.filename}\n"
+                    "This error may have occured because the storage folder "
+                    "name you provided is reserved by the system.\n"
+                    "Please correct the issue and try again."
+                )
+                sys.exit()
+            except OSError as e:
+                print(
+                    "The operating system was unable to process the operation "
+                    "for the following reason:"
+                )
+                print(e.strerror)
+                print("Please correct the issue and try again.")
+                sys.exit()
         else:
             print("Operation aborted")
 
