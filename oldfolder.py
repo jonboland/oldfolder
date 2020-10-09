@@ -6,6 +6,7 @@ Moves can also be specified based on created or accessed time.
 
 """
 import argparse
+import builtins
 import os
 import pathlib
 import shutil
@@ -39,7 +40,8 @@ def prepare_move(path, number, storage_folder, time_type):
         Each tuple comprises a source path and a destination path.
 
     Raises:
-        ValueError: if a subdirectory with the same name as the storage folder is found.
+        FolderAlreadyExistsError:
+            if a subdirectory with the same name as the storage folder is found.
     """
     main_directory = pathlib.Path(path)
     subdirectories = [item for item in main_directory.iterdir() if item.is_dir()]
@@ -138,6 +140,7 @@ def main(path, number, storage_folder, time_type):
                     "Please correct the issue and try again."
                 )
                 sys.exit()
+            # Occurs if reserved characters are used in storage folder name etc.
             except OSError as error:
                 print(
                     "The operating system was unable to process the operation "
