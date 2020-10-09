@@ -6,6 +6,7 @@ Moves can also be specified based on created or accessed time.
 
 """
 import argparse
+import builtins
 import os
 import pathlib
 import shutil
@@ -39,7 +40,8 @@ def prepare_move(path, number, storage_folder, time_type):
         Each tuple comprises a source path and a destination path.
 
     Raises:
-        ValueError: if a subdirectory with the same name as the storage folder is found.
+        FolderAlreadyExistsError:
+            if a subdirectory with the same name as the storage folder is found.
     """
     main_directory = pathlib.Path(path)
     subdirectories = [item for item in main_directory.iterdir() if item.is_dir()]
@@ -56,13 +58,17 @@ def prepare_move(path, number, storage_folder, time_type):
     return file_operations
 
 
+class FolderAlreadyExistsError(ValueError):
+    pass
+
+
 def _check_storage_folder_name(storage_folder, subdirectories):
     # Checks if the storage folder name already exists in the main directory
     # and aborts the operation if it does.
     subdirectory_names = {subdirectory.name for subdirectory in subdirectories}
     if storage_folder in subdirectory_names:
-        raise ValueError(
-            "Cannot complete the operation because a folder named "
+        raise FolderAlreadyExistsError(
+            "The operation was aborted because a folder named "
             f"{storage_folder} already exists in that location.\n"
         )
 
@@ -95,11 +101,14 @@ def move_files(file_operations):
 def main(path, number, storage_folder, time_type):
     try:
         file_operations = prepare_move(path, number, storage_folder, time_type)
-    except ValueError:
+    except FolderAlreadyExistsError as error:
+        print(error, "Please try again using a different storage folder name.", sep="")
+        sys.exit()
+    except FileNotFoundError as error:
         print(
-            "The operation has been aborted because a folder\n"
-            f"named {storage_folder} already exists in that location.\n"
-            "Please try again using a different storage folder name."
+            "The operation was aborted because the system cannot find "
+            f"the specified file path: {error.filename}\n"
+            "Please check the path and try again."
         )
         sys.exit()
 
@@ -119,8 +128,27 @@ def main(path, number, storage_folder, time_type):
             print("\t", subdirectory_name)
         proceed = input("Would you like to proceed?: Y/N ")
         if proceed.upper() in ("Y", "YES"):
-            move_files(file_operations)
-            print("Operation complete")
+            try:
+                move_files(file_operations)
+                print("Operation complete")
+            except FileNotFoundError as error:
+                print(
+                    "The operation was aborted because the system cannot find "
+                    f"the specified file path: {error.filename}\n"
+                    "This error may have occured because the storage folder "
+                    "name you provided is reserved by the system.\n"
+                    "Please correct the issue and try again."
+                )
+                sys.exit()
+            # Occurs if reserved characters are used in storage folder name etc.
+            except OSError as error:
+                print(
+                    "The operating system was unable to process the operation "
+                    "for the following reason:"
+                )
+                print(error.strerror)
+                print("Please correct the issue and try again.")
+                sys.exit()
         else:
             print("Operation aborted")
 

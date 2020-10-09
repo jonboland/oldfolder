@@ -20,16 +20,17 @@ def fake_time(monkeypatch):
 
 
 def test_prepare_move_storage_folder_name_already_exists(fs, fake_directory):
-    """Fails if ValueError not raised with correct error message."""
+    """Fails if FolderAlreadyExistsError not raised with correct error message."""
     # Add folder with same name as storage folder to the fake directory
     fs.create_dir(Path(r"F:\main_directory\old_stuff"))
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(oldfolder.FolderAlreadyExistsError) as excinfo:
         oldfolder.prepare_move(Path(r"F:\main_directory"), 1, "old_stuff", "modified")
 
     assert (
-        "Cannot complete the operation because a folder named old_stuff "
-        "already exists in that location.\n" == str(excinfo.value)
+        str(excinfo.value)
+        == "The operation was aborted because a folder named old_stuff "
+        "already exists in that location.\n"
     )
 
 
@@ -89,7 +90,7 @@ def test_move_files_one_folder_placed_in_storage(fake_directory):
 
 
 def test_main_storage_folder_name_already_exists(fs, fake_directory, capsys):
-    """Fails if SystemExit not raised or abort message not displayed."""
+    """Fails if SystemExit not raised or folder exists message not displayed."""
     # Add folder with same name as storage folder to the fake directory
     fs.create_dir(Path(r"F:\main_directory\old_stuff"))
 
@@ -98,13 +99,29 @@ def test_main_storage_folder_name_already_exists(fs, fake_directory, capsys):
 
     captured = capsys.readouterr()
     assert captured.out == (
-        "The operation has been aborted because a folder\n"
-        "named old_stuff already exists in that location.\n"
+        "The operation was aborted because a folder named "
+        "old_stuff already exists in that location.\n"
         "Please try again using a different storage folder name.\n"
     )
 
 
-def test_main_correct_move_summary_displayed(monkeypatch, capsys):
+def test_main_file_path_not_found(fake_directory, capsys):
+    """Fails if SystemExit not raised or check path message not displayed."""
+
+    path = Path(r"F:\main_directories")
+
+    with pytest.raises(SystemExit):
+        oldfolder.main(Path(path), 1, "old_stuff", "modified")
+
+    captured = capsys.readouterr()
+    assert captured.out == (
+        "The operation was aborted because the system cannot find "
+        f"the specified file path: {path}\n"
+        "Please check the path and try again.\n"
+    )
+
+
+def test_main_correct_move_summary_displayed(fake_directory, monkeypatch, capsys):
     def fake_prepare(path, number, storage_folder, time_type):
         return [
             (
@@ -115,17 +132,21 @@ def test_main_correct_move_summary_displayed(monkeypatch, capsys):
 
     monkeypatch.setattr(oldfolder, "prepare_move", fake_prepare)
 
-    try:
-        oldfolder.main(Path(r"F:\main_directory"), 1, "old_stuff", "modified")
-    except OSError:
-        pass
+    def fake_input(response):
+        print("Would you like to proceed?: Y/N ")
+        return "NO"
+
+    monkeypatch.setattr(oldfolder.builtins, "input", fake_input)
+
+    oldfolder.main(Path(r"F:\main_directory"), 1, "old_stuff", "modified")
 
     captured = capsys.readouterr()
     assert captured.out == (
         "Based on the modified times of the files contained within them,\n"
         "the subdirectories that will be moved to the old_stuff folder are:\n"
         "\t old_files_1\n"
-        "Would you like to proceed?: Y/N "
+        "Would you like to proceed?: Y/N \n"
+        "Operation aborted\n"
     )
 
 
