@@ -1,13 +1,13 @@
 Old Folder
 ==========
 
-.. figure:: docs/oldfiles.png
+.. figure:: https://raw.githubusercontent.com/jonboland/oldfolder/master/docs/oldfiles.png
   :alt: Black and white picture of stacks of old folders
 
 |
 
 Old Folder spring cleans a file directory by storing away subdirectories
-that haven’t been modified for a given period.
+that haven't been modified for a given period.
 
 It's a single file script that can be used via a command line interface
 with Python 3.6+ preinstalled:
@@ -17,13 +17,16 @@ with Python 3.6+ preinstalled:
  F:\>py oldfolder.py -h
  usage: oldfolder.py [-h] [-t {modified,accessed,created}] path number storage
 
- Move old subdirectories that contain files which haven't been modified for a given period of time.
+ Move old subdirectories that contain files which haven't been modified for
+ a given period of time.
  Moves can also be specified based on created or accessed time.
 
  positional arguments:
   path                  Path of directory where subdirectories can be found.
-  number                Number of years since files in subdirectories were modified, accessed, or created.
-  storage               Name of storage folder to place the old subdirectories inside. The storage folder
+  number                Number of years since files in subdirectories were
+                        modified, accessed, or created.
+  storage               Name of storage folder to place the old
+                        subdirectories inside. The storage folder
                         location will be the specifed path.
 
  optional arguments:
