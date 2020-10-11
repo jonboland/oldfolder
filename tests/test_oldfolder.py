@@ -1,6 +1,8 @@
-import pytest
+from argparse import Namespace
 from pathlib import Path
+import pytest
 
+import context
 import oldfolder
 
 
@@ -17,6 +19,19 @@ def fake_time(monkeypatch):
         return 1602058053.0
 
     monkeypatch.setattr(oldfolder.time, "time", fake_now)
+
+
+@pytest.fixture
+def fake_parse_args(monkeypatch):
+    def fake_args():
+        return Namespace(
+            path=Path(r"F:\main_directory"),
+            number=1,
+            storage="old_stuff",
+            time_type="modified",
+        )
+
+    monkeypatch.setattr(oldfolder, "parse_arguments", fake_args)
 
 
 def test_prepare_move_storage_folder_name_already_exists(fs, fake_directory):
@@ -89,13 +104,15 @@ def test_move_files_one_folder_placed_in_storage(fake_directory):
     assert not Path(r"F:\main_directory\old_files").exists()
 
 
-def test_main_storage_folder_name_already_exists(fs, fake_directory, capsys):
+def test_main_storage_folder_name_already_exists(
+    fs, fake_directory, fake_parse_args, capsys
+):
     """Fails if SystemExit not raised or folder exists message not displayed."""
     # Add folder with same name as storage folder to the fake directory
     fs.create_dir(Path(r"F:\main_directory\old_stuff"))
 
     with pytest.raises(SystemExit):
-        oldfolder.main(Path(r"F:\main_directory"), 1, "old_stuff", "modified")
+        oldfolder.main()
 
     captured = capsys.readouterr()
     assert captured.out == (
@@ -105,23 +122,60 @@ def test_main_storage_folder_name_already_exists(fs, fake_directory, capsys):
     )
 
 
-def test_main_file_path_not_found(fake_directory, capsys):
+def test_main_file_path_not_found(fake_directory, monkeypatch, capsys):
     """Fails if SystemExit not raised or check path message not displayed."""
 
-    path = Path(r"F:\main_directories")
+    def fake_args():
+        return Namespace(
+            path=Path(r"F:\main_directories"),
+            number=1,
+            storage="old_stuff",
+            time_type="modified",
+        )
+
+    monkeypatch.setattr(oldfolder, "parse_arguments", fake_args)
 
     with pytest.raises(SystemExit):
-        oldfolder.main(Path(path), 1, "old_stuff", "modified")
+        oldfolder.main()
 
     captured = capsys.readouterr()
     assert captured.out == (
         "The operation was aborted because the system cannot find "
-        f"the specified file path: {path}\n"
+        f"the specified file path: F:\\main_directories\n"
         "Please check the path and try again.\n"
     )
 
 
-def test_main_correct_move_summary_displayed(fake_directory, monkeypatch, capsys):
+def test_main_no_file_operations_aborted_message_displayed(
+    fake_directory, monkeypatch, capsys
+):
+    def fake_args():
+        return Namespace(
+            path=Path(r"F:\main_directory"),
+            number=1,
+            storage="old_stuff",
+            time_type="accessed",
+        )
+
+    monkeypatch.setattr(oldfolder, "parse_arguments", fake_args)
+
+    def fake_prepare(path, number, storage_folder, time_type):
+        return []
+
+    monkeypatch.setattr(oldfolder, "prepare_move", fake_prepare)
+
+    oldfolder.main()
+
+    captured = capsys.readouterr()
+    assert captured.out == (
+        "All subdirectories contain files with accessed times\n"
+        "in the specified period so the operation was aborted\n"
+    )
+
+
+def test_main_correct_move_summary_displayed(
+    fake_directory, fake_parse_args, monkeypatch, capsys
+):
     def fake_prepare(path, number, storage_folder, time_type):
         return [
             (
@@ -138,7 +192,7 @@ def test_main_correct_move_summary_displayed(fake_directory, monkeypatch, capsys
 
     monkeypatch.setattr(oldfolder.builtins, "input", fake_input)
 
-    oldfolder.main(Path(r"F:\main_directory"), 1, "old_stuff", "modified")
+    oldfolder.main()
 
     captured = capsys.readouterr()
     assert captured.out == (
@@ -147,21 +201,6 @@ def test_main_correct_move_summary_displayed(fake_directory, monkeypatch, capsys
         "\t old_files_1\n"
         "Would you like to proceed?: Y/N \n"
         "Operation aborted\n"
-    )
-
-
-def test_main_no_file_operations_aborted_message_displayed(monkeypatch, capsys):
-    def fake_prepare(path, number, storage_folder, time_type):
-        return []
-
-    monkeypatch.setattr(oldfolder, "prepare_move", fake_prepare)
-
-    oldfolder.main(Path(r"F:\main_directory"), 1, "old_stuff", "accessed")
-
-    captured = capsys.readouterr()
-    assert captured.out == (
-        "All subdirectories contain files with accessed times\n"
-        "in the specified period so the operation was aborted\n"
     )
 
 

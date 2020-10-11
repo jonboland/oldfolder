@@ -41,7 +41,7 @@ def prepare_move(path, number, storage_folder, time_type):
 
     Raises:
         FolderAlreadyExistsError:
-            if a subdirectory with the same name as the storage folder is found.
+            If a subdirectory with the same name as the storage folder is found.
     """
     main_directory = pathlib.Path(path)
     subdirectories = [item for item in main_directory.iterdir() if item.is_dir()]
@@ -64,7 +64,7 @@ class FolderAlreadyExistsError(ValueError):
 
 def _check_storage_folder_name(storage_folder, subdirectories):
     # Checks if the storage folder name already exists in the main directory
-    # and aborts the operation if it does.
+    # and raises an error if it does.
     subdirectory_names = {subdirectory.name for subdirectory in subdirectories}
     if storage_folder in subdirectory_names:
         raise FolderAlreadyExistsError(
@@ -98,9 +98,41 @@ def move_files(file_operations):
         shutil.move(source, destination)
 
 
-def main(path, number, storage_folder, time_type):
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description="Move old subdirectories that contain files "
+        "which haven't been modified for a given period of time. "
+        "Moves can also be specified based on created or accessed time."
+    )
+    parser.add_argument(
+        "path", type=str, help="Path of directory where subdirectories can be found."
+    )
+    parser.add_argument(
+        "number",
+        type=float,
+        help="Number of years since files in subdirectories were modified, accessed, or created.",
+    )
+    parser.add_argument(
+        "storage",
+        type=str,
+        help="Name of storage folder to place the old subdirectories inside. "
+        "The storage folder location will be the specifed path.",
+    )
+    parser.add_argument(
+        "-t",
+        "--time_type",
+        type=str,
+        choices=["modified", "accessed", "created"],
+        default="modified",
+        help="Time stat type to base the move on.",
+    )
+    return parser.parse_args()
+
+
+def main():
+    args = parse_arguments()
     try:
-        file_operations = prepare_move(path, number, storage_folder, time_type)
+        file_operations = prepare_move(args.path, args.number, args.storage, args.time_type)
     except FolderAlreadyExistsError as error:
         print(error, "Please try again using a different storage folder name.", sep="")
         sys.exit()
@@ -114,13 +146,13 @@ def main(path, number, storage_folder, time_type):
 
     if not file_operations:
         print(
-            f"All subdirectories contain files with {time_type} times\n"
+            f"All subdirectories contain files with {args.time_type} times\n"
             "in the specified period so the operation was aborted"
         )
     else:
         print(
-            f"Based on the {time_type} times of the files contained within them,\n"
-            f"the subdirectories that will be moved to the {storage_folder} folder are:"
+            f"Based on the {args.time_type} times of the files contained within them,\n"
+            f"the subdirectories that will be moved to the {args.storage} folder are:"
         )
         for operation in file_operations:
             _, destination = operation
@@ -154,34 +186,4 @@ def main(path, number, storage_folder, time_type):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Move old subdirectories that contain files "
-        "which haven't been modified for a given period of time. "
-        "Moves can also be specified based on created or accessed time."
-    )
-    parser.add_argument(
-        "path", type=str, help="Path of directory where subdirectories can be found."
-    )
-    parser.add_argument(
-        "number",
-        type=float,
-        help="Number of years since files in subdirectories were modified, accessed, or created.",
-    )
-    parser.add_argument(
-        "storage",
-        type=str,
-        help="Name of storage folder to place the old subdirectories inside. "
-        "The storage folder location will be the specifed path.",
-    )
-    parser.add_argument(
-        "-t",
-        "--time_type",
-        type=str,
-        choices=["modified", "accessed", "created"],
-        default="modified",
-        help="Time stat type to base the move on.",
-    )
-
-    args = parser.parse_args()
-
-    main(args.path, args.number, args.storage, args.time_type)
+    main()
