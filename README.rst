@@ -9,13 +9,17 @@ Old Folder
 Old Folder spring cleans a file directory by storing away subdirectories
 that haven't been modified for a given period.
 
-It's a single file script that can be used via a command line interface
-with Python 3.6+ preinstalled:
+Usage
+~~~~~
+
+Python 3.6+ must be preinstalled.
+
+Old Folder can then be pip installed from `PyPI`_ and used via a command line interface:
 
 .. code-block:: shell-session
 
- F:\>py oldfolder.py -h
- usage: oldfolder.py [-h] [-t {modified,accessed,created}] path number storage
+ F:\>oldfolder -h
+ usage: oldfolder [-h] [-t {modified,accessed,created}] path number storage
 
  Move old subdirectories that contain files which haven't been modified for
  a given period of time.
@@ -34,11 +38,17 @@ with Python 3.6+ preinstalled:
   -t {modified,accessed,created}, --time_type {modified,accessed,created}
                         Time stat type to base the move on.
 
+Or you can run it directly:
+
+.. code-block:: shell-session
+
+ F:\>py oldfolder.py -h
+
 Pass the path of the main directory, the length of time and the storage folder name to the program:
 
 .. code-block:: shell-session
 
- F:\>py oldfolder.py "F:\main_directory" 1.5 "old_stuff"
+ F:\>oldfolder "F:\main_directory" 1.5 "old_stuff"
 
 Subdirectories that don't contain any files modified during the period will be listed for storage:
 
@@ -125,4 +135,40 @@ After
                   oldest_file.jpg
                   old_file_2.txt
 
-You can read more about the program towards the end of this `shutil article <https://blog.finxter.com/python-shutil-high-level-file-operations-demystified/>`_.
+You can read more about the program towards the end of this `shutil article`_.
+
+Importing
+~~~~~~~~~
+
+You can also use import Old Folder into your own projects:
+
+
+.. code-block:: python
+
+    import oldfolder
+
+
+    file_operations = oldfolder.prepare_move("F:\main_directory" 1.5 "old_stuff")
+
+    oldfolder.move_files(file_operations)
+
+
+License
+~~~~~~~
+
+Old Folder is offered under the `BSD 3 Clause license`_.
+
+
+Protecting Your Data
+~~~~~~~~~~~~~~~~~~~~
+
+As with other utilities that employ Python's shutil module to carry out high-level
+file operations, proceeding with caution and creating a backup
+of your data prior to use is strongly recommended.
+
+
+
+
+.. _`PyPI`: https://test.pypi.org/project/oldfolder/0.1.7/
+.. _`shutil article`: https://blog.finxter.com/python-shutil-high-level-file-operations-demystified
+.. _`BSD 3 Clause License`: https://github.com/jonboland/oldfolder/blob/master/LICENSE
