@@ -6,7 +6,7 @@ Moves can also be specified based on created or accessed time.
 
 """
 import argparse
-import builtins
+from builtins import input
 import os
 import pathlib
 import shutil
@@ -18,7 +18,7 @@ SECONDS = 365 * 24 * 60 * 60
 TIME_TYPES = {"modified": "st_mtime", "accessed": "st_atime", "created": "st_ctime"}
 
 
-def prepare_move(path, number, storage_folder, time_type):
+def prepare_move(path, number, storage_folder, time_type="modified"):
     """
     Identifies old subdirectories to move and prepares the necessary file operations.
 
