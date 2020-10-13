@@ -4,7 +4,7 @@ with open("README.rst", "r", encoding='utf-8') as fh:
     long_description = fh.read()
 setuptools.setup(
     name="oldfolder",
-    version="0.1.7",
+    version="0.1.1",
     author="Jon Boland",
     author_email="jon@codeclear.co.uk",
     description="Spring cleans a file directory by storing away its old subdirectories.",

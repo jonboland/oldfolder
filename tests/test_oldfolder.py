@@ -190,7 +190,7 @@ def test_main_correct_move_summary_displayed(
         print("Would you like to proceed?: Y/N ")
         return "NO"
 
-    monkeypatch.setattr(oldfolder.builtins, "input", fake_input)
+    monkeypatch.setattr(oldfolder, "input", fake_input)
 
     oldfolder.main()
 
