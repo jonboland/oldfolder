@@ -60,8 +60,6 @@ Subdirectories that don't contain any files modified during the period will be l
           old_files_2
  Would you like to proceed?: Y/N
 
-A simple before and after example can be seen below:
-
 Before
 ~~~~~~
 
@@ -140,7 +138,7 @@ You can read more about the program towards the end of this `shutil article`_.
 Importing
 ~~~~~~~~~
 
-You can also use import Old Folder into your own projects:
+You can also use Old Folder's functions in your own projects:
 
 
 .. code-block:: python
@@ -167,8 +165,15 @@ file operations, proceeding with caution and creating a backup
 of your data prior to use is strongly recommended.
 
 
+Operating System
+~~~~~~~~~~~~~~~~
+
+Old Folder is intended to be operating system independent, but has so far only
+been tested on Windows.
 
 
-.. _`PyPI`: https://test.pypi.org/project/oldfolder/0.1.7/
+
+
+.. _`PyPI`: https://pypi.org/project/oldfolder/
 .. _`shutil article`: https://blog.finxter.com/python-shutil-high-level-file-operations-demystified
 .. _`BSD 3 Clause License`: https://github.com/jonboland/oldfolder/blob/master/LICENSE
